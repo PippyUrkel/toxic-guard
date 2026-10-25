@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ToxiGuard — 25PEC4CS1 NLP Workbench</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="main-container full-card">
+        <div class="card">
+            <span class="badge">Course: 25PEC4CS1 • Natural Language Processing • Fr. CRCE</span>
+            <h1>🛡️ ToxiGuard — Multi-Level NLP & Toxicity Workbench</h1>
+            <p class="subtitle">Hybrid BiLSTM + Classical NLP Pipeline (Morphology, N-Grams, HMM Viterbi POS, WordNet Lesk WSD, Hobbs/Centering Anaphora & XAI)</p>
+
+            <form action="/predict" method="post">
+                <textarea name="comment" placeholder="Try: 'John is a st*pid id1ot. K1ll him! You are killing it on stage though. Email: user@crce.edu.in'" required>{{ comment or '' }}</textarea>
+                <div class="btn-row">
+                    <button type="submit">🔍 Run Full 6-Module NLP Pipeline</button>
+                </div>
+            </form>
+
+            {% if results %}
+            <div class="engine-banner">⚙️ Active Engine: <strong>{{ engine_mode }}</strong></div>
+
+            <div class="visual-section">
+                <div class="chart-section panel">
+                    <h3>📊 Multi-Label Toxicity Probabilities (Mod 1.4 & 6.1)</h3>
+                    <canvas id="toxicityChart"></canvas>
+                    <div class="stats-bar">
+                        <span><strong>Mean (μ):</strong> {{ syllabus.module_1_preliminaries.probability_statistics.mean_probability }}</span>
+                        <span><strong>Variance (σ²):</strong> {{ syllabus.module_1_preliminaries.probability_statistics.variance }}</span>
+                        <span><strong>Std Dev (σ):</strong> {{ syllabus.module_1_preliminaries.probability_statistics.std_dev }}</span>
+                    </div>
+                </div>
+
+                <div class="network-section panel">
+                    <h3>🔍 Module 6.2 — Explainable AI (XAI) Token Attribution</h3>
+                    <div class="token-strip">
+                        {% for item in syllabus.module_6_ethics_and_xai.xai_token_attributions %}
+                            {% if item.impact > 0 %}
+                                <span class="tok-chip tok-toxic" title="{{ item.reason }} | Categories: {{ item.categories | join(', ') }}">
+                                    {{ item.token }} <small>(+{{ item.impact }})</small>
+                                </span>
+                            {% elif item.impact < 0 %}
+                                <span class="tok-chip tok-benign" title="{{ item.reason }}">
+                                    {{ item.token }} <small>(WSD Safe)</small>
+                                </span>
+                            {% else %}
+                                <span class="tok-chip tok-neutral">{{ item.token }}</span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <hr class="divider">
+                    <h4>🔒 Privacy & Fairness Audit (Mod 6.2)</h4>
+                    <p class="small-text"><strong>PII Anonymized Preview:</strong> <code>{{ syllabus.module_6_ethics_and_xai.fairness_and_privacy.privacy_compliance.anonymized_preview }}</code></p>
+                    <p class="small-text"><strong>Counterfactual Fairness:</strong> {{ syllabus.module_6_ethics_and_xai.fairness_and_privacy.demographic_parity_audit.bias_mitigation_note }}</p>
+                </div>
+            </div>
+
+            <div class="visual-section">
+                <div class="panel half-panel">
+                    <h3>🔤 Module 2 — Word-Level: Morphology, Stemming & Edit Distance</h3>
+                    <p class="small-text">
+                        <strong>Bigram Perplexity (Laplace Add-1 Smoothing):</strong>
+                        Toxic LM = <code>{{ syllabus.module_2_word_level.ngram_language_model.toxic_corpus_perplexity }}</code> |
+                        Safe LM = <code>{{ syllabus.module_2_word_level.ngram_language_model.safe_corpus_perplexity }}</code>
+                    </p>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Token</th>
+                                    <th>Normalized (Edit Dist)</th>
+                                    <th>Lemma</th>
+                                    <th>Porter Stem</th>
+                                    <th>Morphology Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for m in syllabus.module_2_word_level.morphology %}
+                                {% set adv = syllabus.module_2_word_level.adversarial_edit_distance[loop.index0] %}
+                                <tr>
+                                    <td><strong>{{ m.surface_form }}</strong></td>
+                                    <td>{{ adv.normalized }} <small>({{ adv.method }})</small></td>
+                                    <td>{{ m.lemma }}</td>
+                                    <td>{{ m.porter_stem }}</td>
+                                    <td>{{ m.morphology_type }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel half-panel">
+                    <h3>📐 Module 3 — Syntax: Penn Treebank HMM + Viterbi POS Tagger</h3>
+                    <p class="small-text"><strong>Optimal Viterbi Path Log-Prob:</strong> <code>{{ syllabus.module_3_syntax_level.best_path_log_prob }}</code></p>
+                    <div class="pos-grid">
+                        {% for t in syllabus.module_3_syntax_level.tagged_tokens %}
+                        <div class="pos-card" title="{{ t.description }}">
+                            <span class="pos-word">{{ t.token }}</span>
+                            <span class="pos-tag">{{ t.pos_tag }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="visual-section">
+                <div class="panel half-panel">
+                    <h3>🧠 Module 4 — Semantics: WordNet Synsets, Lesk WSD & Cosine Distance</h3>
+                    {% if syllabus.module_4_semantic_analysis.wordnet_lesk_wsd %}
+                        {% for w in syllabus.module_4_semantic_analysis.wordnet_lesk_wsd %}
+                        <div class="wsd-box">
+                            <strong>Token: "{{ w.word }}" → Synset: <code>{{ w.selected_synset }}</code> ({{ w.sense_type }})</strong>
+                            <p class="small-text"><em>Gloss:</em> {{ w.gloss }}</p>
+                            <p class="small-text">
+                                <strong>Synonyms:</strong> {{ w.lexical_relations.synonyms | join(', ') }} |
+                                <strong>Antonyms:</strong> {{ w.lexical_relations.antonyms | join(', ') }} |
+                                <strong>Hypernyms:</strong> {{ w.lexical_relations.hypernyms | join(', ') }}
+                            </p>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="small-text">No ambiguous target words from the WordNet WSD knowledge base detected in this input.</p>
+                    {% endif %}
+                    <h4>📏 Top TF-IDF Cosine Similarity & Distance Matches (Mod 4.3)</h4>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr><th>Ref ID</th><th>Category</th><th>Cosine Sim</th><th>Cosine Dist</th></tr>
+                            </thead>
+                            <tbody>
+                                {% for c in syllabus.module_4_semantic_analysis.tfidf_cosine_similarity[:4] %}
+                                <tr>
+                                    <td>{{ c.doc_id }}</td>
+                                    <td>{{ c.category }}</td>
+                                    <td>{{ c.cosine_similarity }}</td>
+                                    <td>{{ c.cosine_distance }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel half-panel">
+                    <h3>💬 Module 5 — Pragmatics: Hobbs & Centering Anaphora Resolution</h3>
+                    {% if syllabus.module_5_pragmatics_discourse.anaphora_resolutions %}
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr><th>Anaphor</th><th>Resolved Antecedent</th><th>Algorithm</th><th>Constraints</th></tr>
+                            </thead>
+                            <tbody>
+                                {% for a in syllabus.module_5_pragmatics_discourse.anaphora_resolutions %}
+                                <tr>
+                                    <td><strong>{{ a.anaphor }}</strong> (S{{ a.sentence }})</td>
+                                    <td><code>{{ a.resolved_antecedent }}</code></td>
+                                    <td>{{ a.algorithm }}</td>
+                                    <td>{{ a.constraints_satisfied }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="small-text">No pronominal anaphors (he/him/she/her/it/they/you) detected.</p>
+                    {% endif %}
+
+                    <h4>Centering Theory State Transitions (Cf, Cp, Cb)</h4>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr><th>Utterance</th><th>Cf (Forward)</th><th>Cp (Preferred)</th><th>Cb (Backward)</th><th>Transition</th></tr>
+                            </thead>
+                            <tbody>
+                                {% for ct in syllabus.module_5_pragmatics_discourse.centering_table %}
+                                <tr>
+                                    <td>{{ ct.utterance }}</td>
+                                    <td>{{ ct.Cf_forward_centers | join(', ') or 'None' }}</td>
+                                    <td>{{ ct.Cp_preferred_center }}</td>
+                                    <td>{{ ct.Cb_backward_center }}</td>
+                                    <td>{{ ct.transition }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                const dataObj = {{ results | tojson | safe }};
+                const labelsArr = Object.keys(dataObj);
+                const dataArr = Object.values(dataObj);
+                const colors = dataArr.map(v => {
+                    const r = Math.floor(v * 235 + 20);
+                    const g = Math.floor((1 - v) * 210);
+                    return `rgba(${r}, ${g}, 160, 0.75)`;
+                });
+                const ctx = document.getElementById('toxicityChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labelsArr,
+                        datasets: [{
+                            label: 'Toxicity Probability',
+                            data: dataArr,
+                            backgroundColor: colors,
+                            borderWidth: 2,
+                            borderColor: '#c4b5fd'
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: { beginAtZero: true, max: 1, ticks: { color: '#e2e8f0' } },
+                            x: { ticks: { color: '#e2e8f0' } }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: (ctx) => `${(ctx.parsed.y * 100).toFixed(1)}%`
+                                }
+                            }
+                        }
+                    }
+                });
+            </script>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
