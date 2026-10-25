@@ -1,23 +1,23 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: 255 255 255;
+  --color-bg: 248 250 252;
   --color-box: 255 255 255;
-  --box-border: 229 231 235;
+  --box-border: 226 232 240;
   --box-sd: 226 232 240 / 0.5;
-  --heading-1: 23 37 84;
-  --heading-2: 31 41 55;
-  --heading-3: 55 65 81;
+  --heading-1: 15 23 42;
+  --heading-2: 51 65 85;
+  --heading-3: 100 116 139;
 }
 
 .dark {
-  --color-bg: 3 7 18;
-  --color-box: 17 24 39;
-  --box-border: 243 244 246 / 0.1;
+  --color-bg: 9 13 22;
+  --color-box: 15 23 42;
+  --box-border: 51 65 85 / 0.5;
   --box-sd: transparent;
-  --heading-1: 255 255 255;
-  --heading-2: 243 244 246;
-  --heading-3: 209 213 219;
+  --heading-1: 248 250 252;
+  --heading-2: 203 213 225;
+  --heading-3: 148 163 184;
 }
 
 @layer utilities {
@@ -36,6 +36,9 @@
   .text-heading-3 {
     color: rgb(var(--heading-3));
   }
+  .border-box-border {
+    border-color: rgb(var(--box-border));
+  }
 }
 
 html {
@@ -43,5 +46,7 @@ html {
 }
 
 body {
-  font-family: "Raleway", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }

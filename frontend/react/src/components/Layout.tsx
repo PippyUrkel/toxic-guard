@@ -12,14 +12,14 @@ export const Layout = ({ title, children }: LayoutProps) => {
     document.title = title;
   }, [title]);
   return (
-    <>
+    <div className="min-h-screen flex flex-col bg-body text-heading-2 transition-colors">
       <Navbar />
 
-      <main className="flex flex-col gap-y-20 md:gap-y-32 overflow-hidden">
+      <main className="flex-1 flex flex-col gap-y-6">
         {children}
       </main>
 
       <Footer />
-    </>
+    </div>
   );
 };

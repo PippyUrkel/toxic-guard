@@ -2,30 +2,34 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>ToxiGuard — 25PEC4CS1 NLP Workbench</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToxiGuard — 25PEC4CS1 NLP Linguistic & Toxicity Engine</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="main-container full-card">
         <div class="card">
-            <span class="badge">Course: 25PEC4CS1 • Natural Language Processing • Fr. CRCE</span>
-            <h1>🛡️ ToxiGuard — Multi-Level NLP & Toxicity Workbench</h1>
-            <p class="subtitle">Hybrid BiLSTM + Classical NLP Pipeline (Morphology, N-Grams, HMM Viterbi POS, WordNet Lesk WSD, Hobbs/Centering Anaphora & XAI)</p>
+            <div class="badge-row">
+                <span class="badge">Course: 25PEC4CS1 • Natural Language Processing • Fr. CRCE</span>
+                <a href="/" class="view-toggle">Switch to Modern Dashboard</a>
+            </div>
+            <h1>ToxiGuard — Linguistic Pipeline & Toxicity Engine</h1>
+            <p class="subtitle">Hybrid BiLSTM + Classical NLP Pipeline: Morphology, N-Gram Perplexity, HMM Viterbi POS, WordNet Lesk WSD, Hobbs Anaphora & XAI</p>
 
             <form action="/predict" method="post">
-                <textarea name="comment" placeholder="Try: 'John is a st*pid id1ot. K1ll him! You are killing it on stage though. Email: user@crce.edu.in'" required>{{ comment or '' }}</textarea>
+                <textarea name="comment" placeholder="Input sentence to evaluate (e.g., 'You are a st*pid id1ot and I will k1ll you')..." required>{{ comment or '' }}</textarea>
                 <div class="btn-row">
-                    <button type="submit">🔍 Run Full 6-Module NLP Pipeline</button>
+                    <button type="submit">Execute 6-Stage NLP Pipeline</button>
                 </div>
             </form>
 
             {% if results %}
-            <div class="engine-banner">⚙️ Active Engine: <strong>{{ engine_mode }}</strong></div>
+            <div class="engine-banner">Active Engine: <strong>{{ engine_mode }}</strong></div>
 
             <div class="visual-section">
                 <div class="chart-section panel">
-                    <h3>📊 Multi-Label Toxicity Probabilities (Mod 1.4 & 6.1)</h3>
+                    <h3>Multi-Label Toxicity Probabilities (Mod 1.4 & 6.1)</h3>
                     <canvas id="toxicityChart"></canvas>
                     <div class="stats-bar">
                         <span><strong>Mean (μ):</strong> {{ syllabus.module_1_preliminaries.probability_statistics.mean_probability }}</span>
@@ -35,7 +39,7 @@
                 </div>
 
                 <div class="network-section panel">
-                    <h3>🔍 Module 6.2 — Explainable AI (XAI) Token Attribution</h3>
+                    <h3>Module 6.2 — Explainable AI (XAI) Token Attribution</h3>
                     <div class="token-strip">
                         {% for item in syllabus.module_6_ethics_and_xai.xai_token_attributions %}
                             {% if item.impact > 0 %}
@@ -52,7 +56,7 @@
                         {% endfor %}
                     </div>
                     <hr class="divider">
-                    <h4>🔒 Privacy & Fairness Audit (Mod 6.2)</h4>
+                    <h4>Privacy & Fairness Audit (Mod 6.2)</h4>
                     <p class="small-text"><strong>PII Anonymized Preview:</strong> <code>{{ syllabus.module_6_ethics_and_xai.fairness_and_privacy.privacy_compliance.anonymized_preview }}</code></p>
                     <p class="small-text"><strong>Counterfactual Fairness:</strong> {{ syllabus.module_6_ethics_and_xai.fairness_and_privacy.demographic_parity_audit.bias_mitigation_note }}</p>
                 </div>
@@ -60,7 +64,7 @@
 
             <div class="visual-section">
                 <div class="panel half-panel">
-                    <h3>🔤 Module 2 — Word-Level: Morphology, Stemming & Edit Distance</h3>
+                    <h3>Module 2 — Word-Level: Morphology, Stemming & Edit Distance</h3>
                     <p class="small-text">
                         <strong>Bigram Perplexity (Laplace Add-1 Smoothing):</strong>
                         Toxic LM = <code>{{ syllabus.module_2_word_level.ngram_language_model.toxic_corpus_perplexity }}</code> |
@@ -82,7 +86,7 @@
                                 {% set adv = syllabus.module_2_word_level.adversarial_edit_distance[loop.index0] %}
                                 <tr>
                                     <td><strong>{{ m.surface_form }}</strong></td>
-                                    <td>{{ adv.normalized }} <small>({{ adv.method }})</small></td>
+                                    <td>{{ adv.normalized if adv else m.surface_form }} <small>({{ adv.method if adv else 'Exact' }})</small></td>
                                     <td>{{ m.lemma }}</td>
                                     <td>{{ m.porter_stem }}</td>
                                     <td>{{ m.morphology_type }}</td>
@@ -94,7 +98,7 @@
                 </div>
 
                 <div class="panel half-panel">
-                    <h3>📐 Module 3 — Syntax: Penn Treebank HMM + Viterbi POS Tagger</h3>
+                    <h3>Module 3 — Syntax: Penn Treebank HMM + Viterbi POS Tagger</h3>
                     <p class="small-text"><strong>Optimal Viterbi Path Log-Prob:</strong> <code>{{ syllabus.module_3_syntax_level.best_path_log_prob }}</code></p>
                     <div class="pos-grid">
                         {% for t in syllabus.module_3_syntax_level.tagged_tokens %}
@@ -109,7 +113,7 @@
 
             <div class="visual-section">
                 <div class="panel half-panel">
-                    <h3>🧠 Module 4 — Semantics: WordNet Synsets, Lesk WSD & Cosine Distance</h3>
+                    <h3>Module 4 — Semantics: WordNet Synsets, Lesk WSD & Cosine Distance</h3>
                     {% if syllabus.module_4_semantic_analysis.wordnet_lesk_wsd %}
                         {% for w in syllabus.module_4_semantic_analysis.wordnet_lesk_wsd %}
                         <div class="wsd-box">
@@ -125,7 +129,7 @@
                     {% else %}
                         <p class="small-text">No ambiguous target words from the WordNet WSD knowledge base detected in this input.</p>
                     {% endif %}
-                    <h4>📏 Top TF-IDF Cosine Similarity & Distance Matches (Mod 4.3)</h4>
+                    <h4>Top TF-IDF Cosine Similarity & Distance Matches (Mod 4.3)</h4>
                     <div class="table-wrap">
                         <table>
                             <thead>
@@ -146,7 +150,7 @@
                 </div>
 
                 <div class="panel half-panel">
-                    <h3>💬 Module 5 — Pragmatics: Hobbs & Centering Anaphora Resolution</h3>
+                    <h3>Module 5 — Pragmatics: Hobbs & Centering Anaphora Resolution</h3>
                     {% if syllabus.module_5_pragmatics_discourse.anaphora_resolutions %}
                     <div class="table-wrap">
                         <table>
@@ -196,9 +200,7 @@
                 const labelsArr = Object.keys(dataObj);
                 const dataArr = Object.values(dataObj);
                 const colors = dataArr.map(v => {
-                    const r = Math.floor(v * 235 + 20);
-                    const g = Math.floor((1 - v) * 210);
-                    return `rgba(${r}, ${g}, 160, 0.75)`;
+                    return v >= 0.5 ? 'rgba(239, 68, 68, 0.8)' : 'rgba(16, 185, 129, 0.8)';
                 });
                 const ctx = document.getElementById('toxicityChart').getContext('2d');
                 new Chart(ctx, {
@@ -209,14 +211,14 @@
                             label: 'Toxicity Probability',
                             data: dataArr,
                             backgroundColor: colors,
-                            borderWidth: 2,
-                            borderColor: '#c4b5fd'
+                            borderWidth: 1,
+                            borderColor: '#334155'
                         }]
                     },
                     options: {
                         scales: {
-                            y: { beginAtZero: true, max: 1, ticks: { color: '#e2e8f0' } },
-                            x: { ticks: { color: '#e2e8f0' } }
+                            y: { beginAtZero: true, max: 1, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(51, 65, 85, 0.3)' } },
+                            x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(51, 65, 85, 0.3)' } }
                         },
                         plugins: {
                             legend: { display: false },
